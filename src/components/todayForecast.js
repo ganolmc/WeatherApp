@@ -1,14 +1,15 @@
 import { Component } from '../Facepalm';
 
-class TodayForecast {
-	constructor() {
+class TodayForecast extends Component{
+	constructor(props) {
+		super(props);
 		this.forecastContainer = document.createElement('div');
 		this.forecastContainer.classList.add('container__forecast');
 		this.host = document.getElementById('container');
 	}
 
 	render(data) {
-		console.log(data);
+		//console.log(data);
 		const loc = data.city;
 		const conditions = data.today.weather;
 		const temperature = data.today.temp_c;

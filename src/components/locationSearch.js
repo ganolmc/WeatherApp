@@ -22,17 +22,25 @@ class LocationSearch extends Component {
 		this.searchButton.classList.add('search-submit');
 		this.searchButton.innerHTML = 'Get Weather';
 		this.searchForm.appendChild(this.searchInput);
-		this.searchForm.appendChild(this.searchButton);		
-		this.searchBox = new google.maps.places.SearchBox(this.searchInput);
-		this.searchBox.addListener('places_changed', this.handlePlaceChange.bind(this))
+		this.searchForm.appendChild(this.searchButton);	
+		let autocomplete = new google.maps.places.Autocomplete((this.searchInput), {
+          types: [`(cities)`],
+		});
+		window.google.maps.event.clearInstanceListeners(this.host);
+        window.google.maps.event.addListener(autocomplete, 'place_changed', this.handlePlaceChange.bind(this));
 		this.host.addEventListener('submit', this.handleSubmit.bind(this));
 	}
 
 	handlePlaceChange() {
-		const locale = this.searchBox.getPlaces()[0];
-       	this.state.coords.lat = locale.geometry.location.lat();
-    	this.state.coords.lng = locale.geometry.location.lng();
-    	this.state.city = this.searchInput.value;
+		//console.log(this);
+        let geo = new google.maps.Geocoder();
+        geo.geocode({
+        	address: this.searchInput.value
+        }, (data) => {
+        	this.state.coords.lat = data[0].geometry.location.lat();
+        	this.state.coords.lng = data[0].geometry.location.lng();
+        	this.state.city = this.searchInput.value;
+        });
 	}
 
 	updateState(nextState){

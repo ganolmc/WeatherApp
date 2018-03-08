@@ -71,7 +71,7 @@ require = (function (modules, cache, entry) {
 
   // Override the current require with this new one
   return newRequire;
-})({9:[function(require,module,exports) {
+})({11:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -131,7 +131,7 @@ var Component = function () {
 }();
 
 exports.default = Component;
-},{}],7:[function(require,module,exports) {
+},{}],10:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -148,7 +148,7 @@ Object.defineProperty(exports, 'Component', {
 });
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./Component":9}],6:[function(require,module,exports) {
+},{"./Component":11}],12:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -193,8 +193,11 @@ var LocationSearch = function (_Component) {
 		_this.searchButton.innerHTML = 'Get Weather';
 		_this.searchForm.appendChild(_this.searchInput);
 		_this.searchForm.appendChild(_this.searchButton);
-		_this.searchBox = new google.maps.places.SearchBox(_this.searchInput);
-		_this.searchBox.addListener('places_changed', _this.handlePlaceChange.bind(_this));
+		var autocomplete = new google.maps.places.Autocomplete(_this.searchInput, {
+			types: ['(cities)']
+		});
+		window.google.maps.event.clearInstanceListeners(_this.host);
+		window.google.maps.event.addListener(autocomplete, 'place_changed', _this.handlePlaceChange.bind(_this));
 		_this.host.addEventListener('submit', _this.handleSubmit.bind(_this));
 		return _this;
 	}
@@ -202,10 +205,17 @@ var LocationSearch = function (_Component) {
 	_createClass(LocationSearch, [{
 		key: 'handlePlaceChange',
 		value: function handlePlaceChange() {
-			var locale = this.searchBox.getPlaces()[0];
-			this.state.coords.lat = locale.geometry.location.lat();
-			this.state.coords.lng = locale.geometry.location.lng();
-			this.state.city = this.searchInput.value;
+			var _this2 = this;
+
+			//console.log(this);
+			var geo = new google.maps.Geocoder();
+			geo.geocode({
+				address: this.searchInput.value
+			}, function (data) {
+				_this2.state.coords.lat = data[0].geometry.location.lat();
+				_this2.state.coords.lng = data[0].geometry.location.lng();
+				_this2.state.city = _this2.searchInput.value;
+			});
 		}
 	}, {
 		key: 'updateState',
@@ -238,7 +248,7 @@ var LocationSearch = function (_Component) {
 }(_Facepalm.Component);
 
 exports.default = LocationSearch;
-},{"../Facepalm":7}],19:[function(require,module,exports) {
+},{"../Facepalm":10}],14:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -251,19 +261,28 @@ var _Facepalm = require('../Facepalm');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var TodayForecast = function () {
-	function TodayForecast() {
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var TodayForecast = function (_Component) {
+	_inherits(TodayForecast, _Component);
+
+	function TodayForecast(props) {
 		_classCallCheck(this, TodayForecast);
 
-		this.forecastContainer = document.createElement('div');
-		this.forecastContainer.classList.add('container__forecast');
-		this.host = document.getElementById('container');
+		var _this = _possibleConstructorReturn(this, (TodayForecast.__proto__ || Object.getPrototypeOf(TodayForecast)).call(this, props));
+
+		_this.forecastContainer = document.createElement('div');
+		_this.forecastContainer.classList.add('container__forecast');
+		_this.host = document.getElementById('container');
+		return _this;
 	}
 
 	_createClass(TodayForecast, [{
 		key: 'render',
 		value: function render(data) {
-			console.log(data);
+			//console.log(data);
 			var loc = data.city;
 			var conditions = data.today.weather;
 			var temperature = data.today.temp_c;
@@ -282,10 +301,271 @@ var TodayForecast = function () {
 	}]);
 
 	return TodayForecast;
-}();
+}(_Facepalm.Component);
 
 exports.default = TodayForecast;
-},{"../Facepalm":7}],5:[function(require,module,exports) {
+},{"../Facepalm":10}],13:[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Facepalm = require('../Facepalm');
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var FourDaysForecast = function (_Component) {
+	_inherits(FourDaysForecast, _Component);
+
+	function FourDaysForecast(props) {
+		_classCallCheck(this, FourDaysForecast);
+
+		var _this = _possibleConstructorReturn(this, (FourDaysForecast.__proto__ || Object.getPrototypeOf(FourDaysForecast)).call(this, props));
+
+		_this.forecastContainer = document.createElement('div');
+		_this.forecastContainer.classList.add('container__forecast-wraapper');
+		_this.host = document.getElementById('container');
+		return _this;
+	}
+
+	_createClass(FourDaysForecast, [{
+		key: 'render',
+		value: function render(data) {
+			var weather = data.forecastday;
+			for (var i = 0; i < weather.length; i++) {
+				var periodWeather = document.createElement('div');
+				var iconSrc = weather[i].icon_url;
+				var icon = iconSrc.replace('/k/', '/j/');
+				var iconAlt = weather[i].icon;
+				periodWeather.classList.add('container__forecast-period');
+				periodWeather.innerHTML = '\n\t\t\t<div>' + weather[i].title + '</div>\n\t\t\t<div><img src=\'' + icon + '\' alt=\'' + iconAlt + '\'></div>\n\t\t\t<div>Pop: ' + weather[i].pop + '</div>\n\t\t\t<div>' + weather[i].fcttext_metric + '</div>\n\t\t\t<hr><br>\n\t\t\t';
+				this.forecastContainer.appendChild(periodWeather);
+			}
+			this.host.appendChild(this.forecastContainer);
+		}
+	}]);
+
+	return FourDaysForecast;
+}(_Facepalm.Component);
+
+exports.default = FourDaysForecast;
+},{"../Facepalm":10}],19:[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Facepalm = require('../Facepalm');
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Buttons = function (_Component) {
+	_inherits(Buttons, _Component);
+
+	function Buttons(props) {
+		_classCallCheck(this, Buttons);
+
+		var _this = _possibleConstructorReturn(this, (Buttons.__proto__ || Object.getPrototypeOf(Buttons)).call(this, props));
+
+		_this.state = {
+			btn: null
+		};
+		_this.btns = document.createElement('div');
+		_this.btns.classList.add('btns');
+		_this.host = document.getElementById('container');
+		var btnNames = ['Hourly', '10 days'];
+		btnNames.forEach(function (item, i, btnsNames) {
+			var btn = document.createElement('button');
+			btn.innerHTML = item;
+			_this.btns.appendChild(btn);
+		});
+		_this.btns.addEventListener('click', _this.handleClick.bind(_this));
+		return _this;
+	}
+
+	_createClass(Buttons, [{
+		key: 'handleClick',
+		value: function handleClick(e) {
+			if (e.target.tagName == 'BUTTON') {
+				this.updateState(e.target.innerHTML);
+			}
+		}
+	}, {
+		key: 'updateState',
+		value: function updateState(btn) {
+			this.state.btn = btn;
+			this.onClick();
+		}
+	}, {
+		key: 'onClick',
+		value: function onClick() {
+			this.props.onClick(this.state.btn);
+		}
+	}, {
+		key: 'render',
+		value: function render() {
+			this.host.appendChild(this.btns);
+		}
+	}]);
+
+	return Buttons;
+}(_Facepalm.Component);
+
+exports.default = Buttons;
+},{"../Facepalm":10}],9:[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Facepalm = require('../Facepalm');
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Login = function (_Component) {
+	_inherits(Login, _Component);
+
+	function Login(props) {
+		_classCallCheck(this, Login);
+
+		return _possibleConstructorReturn(this, (Login.__proto__ || Object.getPrototypeOf(Login)).call(this, props));
+	}
+
+	_createClass(Login, [{
+		key: 'render',
+		value: function render() {
+			console.log('sdsdsd');
+		}
+	}]);
+
+	return Login;
+}(_Facepalm.Component);
+
+exports.default = Login;
+},{"../Facepalm":10}],6:[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _App = require('./App');
+
+var _App2 = _interopRequireDefault(_App);
+
+var _Login = require('./components/Login');
+
+var _Login2 = _interopRequireDefault(_Login);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var routes = [{
+	component: _App2.default,
+	href: '/'
+}, {
+	component: _Login2.default,
+	href: '/login'
+}];
+
+exports.default = routes;
+},{"./App":8,"./components/Login":9}],5:[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Facepalm = require('./Facepalm');
+
+var _routes = require('./routes');
+
+var _App = require('./App');
+
+var _App2 = _interopRequireDefault(_App);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Router = function (_Component) {
+	_inherits(Router, _Component);
+
+	function Router(host, routes) {
+		_classCallCheck(this, Router);
+
+		var _this = _possibleConstructorReturn(this, (Router.__proto__ || Object.getPrototypeOf(Router)).call(this, host, routes));
+
+		_this.state = {
+			routes: routes,
+			currentComponent: null
+		};
+
+		_this.host = host;
+		_this.routes = routes;
+		window.addEventListener("hashchange", _this.handleUrlChange.bind(_this));
+		var app = new _App2.default();
+		app.init(_this.host);
+		//console.log(app);
+		return _this;
+	}
+
+	_createClass(Router, [{
+		key: 'handleUrlChange',
+		value: function handleUrlChange() {
+			for (var i = 0; i < this.routes.length; i++) {
+				if (this.routes[i].href != this.state.currentComponent) {
+					this.updateState(this.routes[i].href);
+				}
+			}
+		}
+	}, {
+		key: 'updateState',
+		value: function updateState(s) {
+			this.state.currentComponent = s;
+			console.log(this.state);
+		}
+	}, {
+		key: 'render',
+		value: function render() {}
+	}, {
+		key: 'path',
+		get: function get() {
+			return window.location.hash.slice(1);
+		}
+	}]);
+
+	return Router;
+}(_Facepalm.Component);
+
+exports.default = Router;
+},{"./Facepalm":10,"./routes":6,"./App":8}],8:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -300,9 +580,21 @@ var _locationSearch = require('./components/locationSearch');
 
 var _locationSearch2 = _interopRequireDefault(_locationSearch);
 
-var _todayForecast = require('./components/todayForecast.js');
+var _todayForecast = require('./components/todayForecast');
 
 var _todayForecast2 = _interopRequireDefault(_todayForecast);
+
+var _fourDaysForecast = require('./components/fourDaysForecast');
+
+var _fourDaysForecast2 = _interopRequireDefault(_fourDaysForecast);
+
+var _buttons = require('./components/buttons');
+
+var _buttons2 = _interopRequireDefault(_buttons);
+
+var _Router = require('./Router');
+
+var _Router2 = _interopRequireDefault(_Router);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -318,12 +610,16 @@ var App = function (_Component) {
 	function App(host) {
 		_classCallCheck(this, App);
 
-		var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this));
+		var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, host));
 
 		_this.state = {
 			today: null,
 			fourDays: null,
-			city: null
+			city: null,
+			coords: {
+				lat: null,
+				lng: null
+			}
 		};
 		_this.host = host;
 		_this.locationSearch = new _locationSearch2.default({
@@ -331,7 +627,10 @@ var App = function (_Component) {
 			onSubmit: _this.onSubmit.bind(_this)
 		});
 		_this.todayForecast = new _todayForecast2.default();
-
+		_this.fourDaysForecast = new _fourDaysForecast2.default();
+		_this.buttons = new _buttons2.default({
+			onClick: _this.onClick.bind(_this)
+		});
 		return _this;
 	}
 
@@ -340,6 +639,7 @@ var App = function (_Component) {
 		value: function onSubmit(city) {
 			var _this2 = this;
 
+			this.updateState(city);
 			fetch("http://api.wunderground.com/api/4fb16b2158d4827b/forecast/geolookup/conditions/q/" + city.coords.lat + "," + city.coords.lng + ".json").then(function (response) {
 				if (response.status !== 200) {
 					console.log('Looks like there was a problem. Status Code: ' + response.status);
@@ -353,22 +653,35 @@ var App = function (_Component) {
 			});
 		}
 	}, {
+		key: 'onClick',
+		value: function onClick(btn) {
+			//console.log(btn, this);
+		}
+	}, {
 		key: 'updateState',
 		value: function updateState(data, city) {
-			this.state.today = data.current_observation;
-			this.state.fourDays = data.forecast.txt_forecast;
-			this.state.city = city;
-			this.render();
+			if (!city) {
+				console.log(data);
+			} else {
+				this.state.today = data.current_observation;
+				this.state.fourDays = data.forecast.txt_forecast;
+				this.state.city = city;
+				this.render();
+			}
 		}
 	}, {
 		key: 'render',
 		value: function render() {
+			if (this.state.today != null) {
+				this.buttons.render(this.state);
+			}
 			this.todayForecast.render(this.state);
+			this.fourDaysForecast.render(this.state.fourDays);
 		}
 	}, {
 		key: 'init',
-		value: function init() {
-			this.host.appendChild(this.locationSearch.render());
+		value: function init(host) {
+			host.appendChild(this.locationSearch.render());
 		}
 	}]);
 
@@ -376,7 +689,7 @@ var App = function (_Component) {
 }(_Facepalm.Component);
 
 exports.default = App;
-},{"./Facepalm":7,"./components/locationSearch":6,"./components/todayForecast.js":19}],3:[function(require,module,exports) {
+},{"./Facepalm":10,"./components/locationSearch":12,"./components/todayForecast":14,"./components/fourDaysForecast":13,"./components/buttons":19,"./Router":5}],2:[function(require,module,exports) {
 "use strict";
 
 var _App = require("./src/App");
@@ -385,10 +698,10 @@ var _App2 = _interopRequireDefault(_App);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var app = new _App2.default(document.getElementById("container"));
-app.init();
-//app.getCoords();
-},{"./src/App":5}],23:[function(require,module,exports) {
+var app = new _App2.default();
+
+app.init(document.getElementById("container"));
+},{"./src/App":8}],20:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -410,7 +723,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '51220' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '58993' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -511,5 +824,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[23,3])
+},{}]},{},[20,2])
 //# sourceMappingURL=/dist/WeatherApp1.map
