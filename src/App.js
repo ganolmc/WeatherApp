@@ -3,8 +3,9 @@ import LocationSearch from './components/locationSearch';
 import TodayForecast from './components/todayForecast';
 import FourDaysForecast from './components/fourDaysForecast';
 import Buttons from './components/buttons';
-import Router from './Router';
-
+import HourlyForecast from './components/hourlyForecast';
+import TenDays from './components/tenDays';
+import { getWeather } from './utils/api';
 
 class App extends Component{
 	constructor(host) {
@@ -12,11 +13,10 @@ class App extends Component{
 		this.state = {
 			today: null,
 			fourDays: null,
+			hourly: null,
+			tenDays: null,
 			city: null,
-			coords: {
-				lat: null,
-				lng: null
-			}
+			period: 'today'
 		}
 		this.host = host;
 		this.locationSearch = new LocationSearch({
@@ -25,49 +25,63 @@ class App extends Component{
 		});
 		this.todayForecast = new TodayForecast;
 		this.fourDaysForecast = new FourDaysForecast; 
+		this.hourlyForecast = new HourlyForecast;
+		this.tenDays = new TenDays;
 		this.buttons = new Buttons({
 			onClick: this.onClick.bind(this)
 		});
 	}
 
 	onSubmit(city) {
-		this.updateState(city);
-		fetch("http://api.wunderground.com/api/4fb16b2158d4827b/forecast/geolookup/conditions/q/"+city.coords.lat+","+city.coords.lng+".json")
-		.then((response) => {
-			if (response.status !== 200) {  
-				console.log('Looks like there was a problem. Status Code: ' +  response.status);  
-				return;  
-			}
-			response.json().then((data) => {  
-				this.updateState(data, city.city);
-			})
+		getWeather(city).then((data) => {
+			this.updateState(data, city.city, 'today')
 		}).catch(function(err) {  
-				console.log('Fetch Error :-S', err);  
-			});
+			alert('Fetch Error :-S', err);  
+		});
 	}
 
 	onClick(btn) {
-		//console.log(btn, this);
+		this.updateState(btn);
 	}
 
-	updateState(data, city) {
-		if(!city) {console.log(data)}
-		else {	
-			this.state.today = data.current_observation;
-			this.state.fourDays = data.forecast.txt_forecast;
-			this.state.city = city;
-			this.render();
+	updateState(data, city, period) {
+		if(!city) {
+			this.state.period = data;
 		}
+		else {
+			//console.log(data);
+			this.state.period = period;
+			this.state.city = city;
+			this.state.today = data.current_observation;
+			this.state.fourDays = data.forecast.txt_forecast.forecastday;
+			this.state.tenDays = data.forecast.simpleforecast.forecastday;
+			this.state.hourly = data.hourly_forecast;
+		}
+			this.render();
 	}
 
 	render() {
 		if(this.state.today != null){
 			this.buttons.render(this.state);
 		}
-		this.todayForecast.render(this.state);
-		this.fourDaysForecast.render(this.state.fourDays);
+		switch(this.state.period) {
+			case 'today':
+				this.todayForecast.render(this.state);
+				this.fourDaysForecast.render(this.state.fourDays);
+				break;
+			case 'Hourly':
+				this.todayForecast.render(this.state);
+				this.hourlyForecast.render(this.state.hourly);
+				break;
+			case '10 days':
+				this.todayForecast.render(this.state);
+				this.tenDays.render(this.state.tenDays);
+				break;
+
+		}
 
 	}
+
 	init(host) {
 		host.appendChild(this.locationSearch.render());
 	}

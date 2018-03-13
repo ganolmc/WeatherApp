@@ -1,4 +1,5 @@
 import { Component } from '../Facepalm';
+import { coords } from '../utils/api.js';
 
 class LocationSearch extends Component {
 	constructor(props) {
@@ -21,8 +22,11 @@ class LocationSearch extends Component {
 		this.searchButton = document.createElement('button');
 		this.searchButton.classList.add('search-submit');
 		this.searchButton.innerHTML = 'Get Weather';
+		this.searchError = document.createElement('div');
+		this.searchError.classList.add('form-error');
 		this.searchForm.appendChild(this.searchInput);
 		this.searchForm.appendChild(this.searchButton);	
+		this.searchForm.appendChild(this.searchError);
 		let autocomplete = new google.maps.places.Autocomplete((this.searchInput), {
           types: [`(cities)`],
 		});
@@ -32,15 +36,12 @@ class LocationSearch extends Component {
 	}
 
 	handlePlaceChange() {
-		//console.log(this);
-        let geo = new google.maps.Geocoder();
-        geo.geocode({
-        	address: this.searchInput.value
-        }, (data) => {
-        	this.state.coords.lat = data[0].geometry.location.lat();
-        	this.state.coords.lng = data[0].geometry.location.lng();
-        	this.state.city = this.searchInput.value;
+		this.searchInput.classList.remove('invalid');
+        coords(this.searchInput.value).then((coords) => {
+        	this.state.coords.lat = coords[0];
+        	this.state.coords.lng = coords[1];
         });
+        this.state.city = this.searchInput.value;
 	}
 
 	updateState(nextState){
@@ -52,8 +53,20 @@ class LocationSearch extends Component {
 		const city = e.target.elements.search.value.trim();
 		if (!city.length) {
 			this.updateState({isValid: false});
+			this.searchError.innerHTML = `
+				<p class='error'>It seems, that you didn't enter anything</p>
+			`;
+			this.searchInput.classList.add('invalid');
+		}
+		else if(this.state.city == null) {
+			this.updateState({isValid: false});
+			this.searchError.innerHTML = `
+				<p class='error'>Please, choose location from dropdown</p>
+			`;
+			this.searchInput.classList.add('invalid');
 		} 
 		else {
+			this.searchError.innerHTML = '';
       		this.props.onSubmit(this.state);
 		}
 

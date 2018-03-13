@@ -3,29 +3,27 @@ import { Component } from '../Facepalm';
 class FourDaysForecast extends Component {
 	constructor(props) {
 		super(props);
-		this.forecastContainer = document.createElement('div');
-		this.forecastContainer.classList.add('container__forecast-wraapper');
-		this.host = document.getElementById('container');
+		this.host = this.host = document.getElementById('container');
+		this.fourDays = document.createElement('div');
+		this.fourDays.classList.add('container__forecast-fourDays');
 	}
 
 	render(data) {
-		const weather = data.forecastday;
-		for(let i = 0; i < weather.length; i++) {
-			const periodWeather = document.createElement('div');
-			const iconSrc = weather[i].icon_url;
-			const icon = iconSrc.replace('/k/', '/j/');
-			const iconAlt = weather[i].icon
-			periodWeather.classList.add('container__forecast-period');
-			periodWeather.innerHTML = `
-			<div>${weather[i].title}</div>
-			<div><img src='${icon}' alt='${iconAlt}'></div>
-			<div>Pop: ${weather[i].pop}</div>
-			<div>${weather[i].fcttext_metric}</div>
-			<hr><br>
+		this.fourDays.innerHTML = '';
+		let weather = data;
+		for(let i = 0; i < 8; i++) {
+			let iconSrc = weather[i].icon_url;
+			let icon = iconSrc.replace('/k/', '/i/');
+			this.fourDays.innerHTML += `
+				<div class='container__forecast-fourDays-period'>	
+					<div class="container__forecast-title">${weather[i].title}</div>
+					<div><img src='${icon}' alt='${weather[i].icon}'></div>
+					<div><span class='bold'>Pop:</span> ${weather[i].pop}%</div>
+					<div>${weather[i].fcttext_metric}</div>
+				</div>	
 			`;
-			this.forecastContainer.appendChild(periodWeather);
 		}
-		this.host.appendChild(this.forecastContainer);
+		this.host.children[3].appendChild(this.fourDays);
 	}
 }
 

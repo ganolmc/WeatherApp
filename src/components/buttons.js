@@ -9,9 +9,10 @@ class Buttons extends Component{
 		this.btns = document.createElement('div');
 		this.btns.classList.add('btns');
 		this.host = document.getElementById('container');
-		const btnNames = ['Hourly', '10 days'];
+		let btnNames = ['Hourly', '10 days'];
 		btnNames.forEach((item, i, btnsNames) => {
 			let btn = document.createElement('button');
+			btn.classList.add('btns__btn');
 			btn.innerHTML = item;
 			this.btns.appendChild(btn);
 		});
@@ -24,10 +25,10 @@ class Buttons extends Component{
 	}
 	updateState(btn){
 		this.state.btn = btn;
-		this.onClick();
+		this.onClick(this.state.btn);
 	}
-	onClick(){
-		this.props.onClick(this.state.btn);
+	onClick(btn){
+		this.props.onClick(btn);
 	}
 	render() {
 		this.host.appendChild(this.btns);

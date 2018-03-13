@@ -71,7 +71,7 @@ require = (function (modules, cache, entry) {
 
   // Override the current require with this new one
   return newRequire;
-})({11:[function(require,module,exports) {
+})({16:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -131,7 +131,7 @@ var Component = function () {
 }();
 
 exports.default = Component;
-},{}],10:[function(require,module,exports) {
+},{}],15:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -148,7 +148,35 @@ Object.defineProperty(exports, 'Component', {
 });
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./Component":11}],12:[function(require,module,exports) {
+},{"./Component":16}],14:[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var getWeather = exports.getWeather = function getWeather(city) {
+  return fetch("http://api.wunderground.com/api/4fb16b2158d4827b//forecast/conditions/hourly/forecast10day/q/" + city.coords.lat + "," + city.coords.lng + ".json").then(function (res) {
+    if (!res.ok) {
+      console.log('Looks like there was a problem. Status Code: ' + response.status);
+      return;
+    }
+    return res.json();
+  });
+};
+
+var coords = exports.coords = function coords(location) {
+  return new Promise(function (resolve, reject) {
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({
+      address: location
+    }, function (result) {
+      var lat = result[0].geometry.location.lat();
+      var lng = result[0].geometry.location.lng();
+      resolve([lat, lng]);
+    });
+  });
+};
+},{}],10:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -158,6 +186,8 @@ Object.defineProperty(exports, "__esModule", {
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _Facepalm = require('../Facepalm');
+
+var _api = require('../utils/api.js');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -191,8 +221,11 @@ var LocationSearch = function (_Component) {
 		_this.searchButton = document.createElement('button');
 		_this.searchButton.classList.add('search-submit');
 		_this.searchButton.innerHTML = 'Get Weather';
+		_this.searchError = document.createElement('div');
+		_this.searchError.classList.add('form-error');
 		_this.searchForm.appendChild(_this.searchInput);
 		_this.searchForm.appendChild(_this.searchButton);
+		_this.searchForm.appendChild(_this.searchError);
 		var autocomplete = new google.maps.places.Autocomplete(_this.searchInput, {
 			types: ['(cities)']
 		});
@@ -207,15 +240,12 @@ var LocationSearch = function (_Component) {
 		value: function handlePlaceChange() {
 			var _this2 = this;
 
-			//console.log(this);
-			var geo = new google.maps.Geocoder();
-			geo.geocode({
-				address: this.searchInput.value
-			}, function (data) {
-				_this2.state.coords.lat = data[0].geometry.location.lat();
-				_this2.state.coords.lng = data[0].geometry.location.lng();
-				_this2.state.city = _this2.searchInput.value;
+			this.searchInput.classList.remove('invalid');
+			(0, _api.coords)(this.searchInput.value).then(function (coords) {
+				_this2.state.coords.lat = coords[0];
+				_this2.state.coords.lng = coords[1];
 			});
+			this.state.city = this.searchInput.value;
 		}
 	}, {
 		key: 'updateState',
@@ -230,7 +260,14 @@ var LocationSearch = function (_Component) {
 			var city = e.target.elements.search.value.trim();
 			if (!city.length) {
 				this.updateState({ isValid: false });
+				this.searchError.innerHTML = '\n\t\t\t\t<p class=\'error\'>It seems, that you didn\'t enter anything</p>\n\t\t\t';
+				this.searchInput.classList.add('invalid');
+			} else if (this.state.city == null) {
+				this.updateState({ isValid: false });
+				this.searchError.innerHTML = '\n\t\t\t\t<p class=\'error\'>Please, choose location from dropdown</p>\n\t\t\t';
+				this.searchInput.classList.add('invalid');
 			} else {
+				this.searchError.innerHTML = '';
 				this.props.onSubmit(this.state);
 			}
 		}
@@ -248,7 +285,7 @@ var LocationSearch = function (_Component) {
 }(_Facepalm.Component);
 
 exports.default = LocationSearch;
-},{"../Facepalm":10}],14:[function(require,module,exports) {
+},{"../Facepalm":15,"../utils/api.js":14}],9:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -282,20 +319,20 @@ var TodayForecast = function (_Component) {
 	_createClass(TodayForecast, [{
 		key: 'render',
 		value: function render(data) {
-			//console.log(data);
+			this.forecastContainer.innerHTML = '';
 			var loc = data.city;
 			var conditions = data.today.weather;
 			var temperature = data.today.temp_c;
 			var iconSrc = data.today.icon_url;
-			var icon = iconSrc.replace('/k/', '/j/');
+			var icon = iconSrc.replace('/k/', '/i/');
 			var iconAlt = data.today.icon;
 			var feelslike = data.today.feelslike_c;
 			var precip1hr = data.today.precip_1hr_metric;
 			var precipToday = data.today.precip_today_metric;
 			var humidity = data.today.relative_humidity;
 			var pressure = data.today.pressure_mb;
-			var wind = data.today.wind_kph + ", " + data.today.wind_degrees;
-			this.forecastContainer.innerHTML = '\n\t\t\t<div class=\'container__forecast-city\'>' + loc + '</div>\n\t\t\t<div class=\'container__forecast-conditions-temp\'>' + conditions + ', ' + temperature + '</div>\n\t\t\t<div class=\'container__forecast-icon\'><img src=\'' + icon + '\' alt=\'' + iconAlt + '\'></div>\n\t\t\t<div class=\'container__forecast-feelslike\'>Feelslike: ' + feelslike + '</div>\n\t\t\t<div class=\'container__forecast-precip1hr\'>1 hour precipitations: ' + precip1hr + '</div>\n\t\t\t<div class=\'container__forecast-precip-toady\'>Today precipitations: ' + precipToday + '</div>\n\t\t\t<div class=\'container__forecast-humidity\'>Humidity: ' + humidity + '</div>\n\t\t\t<div class=\'container__forecast-pressure\'>Pressure: ' + pressure + '</div>\n\t\t\t<div class=\'container__forecast-wind\'>Wind: ' + wind + '</div>\n\t\t';
+			var wind = data.today.wind_kph + "km/h. <span class='bold'>Direction:</span> " + data.today.wind_dir;
+			this.forecastContainer.innerHTML = '\n\t\t\t<div class=\'container__forecast-today\'>\n\t\t\t\t<div class=\'container__forecast-city\'><h2><i class="fas fa-map-marker"></i> ' + loc + '</h2></div>\n\t\t\t\t<div class="container__forecast-wrapper-conditions">\n\t\t\t\t\t<div class="container__forecast-wrapper-left">\n\t\t\t\t\t\t<div class=\'container__forecast-conditions-temp\'><span class=\'bold\'>' + conditions + ', ' + temperature + '&deg;C</span></div>\n\t\t\t\t\t\t<div class=\'container__forecast-feelslike\'><span class="bold">Feelslike:</span> ' + feelslike + '&deg;C</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class=\'container__forecast-icon\'><img src=\'' + icon + '\' alt=\'' + iconAlt + '\'></div>\n\t\t\t\t</div>\t\t\n\t\t\t\t<div class=\'container__forecast-precip1hr\'><span class="bold">1 hour precipitations:</span> ' + precip1hr + 'mm</div>\n\t\t\t\t<div class=\'container__forecast-precip-toady\'><span class="bold">Today precipitations:</span> ' + precipToday + 'mm</div>\n\t\t\t\t<div class=\'container__forecast-humidity\'><span class="bold">Humidity:</span> ' + humidity + '</div>\n\t\t\t\t<div class=\'container__forecast-pressure\'><span class="bold">Pressure:</span> ' + pressure + 'mb</div>\n\t\t\t\t<div class=\'container__forecast-wind\'><span class="bold">Wind:</span> ' + wind + '</div>\n\t\t\t</div>\n\t\t';
 			this.host.appendChild(this.forecastContainer);
 		}
 	}]);
@@ -304,7 +341,7 @@ var TodayForecast = function (_Component) {
 }(_Facepalm.Component);
 
 exports.default = TodayForecast;
-},{"../Facepalm":10}],13:[function(require,module,exports) {
+},{"../Facepalm":15}],8:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -329,26 +366,23 @@ var FourDaysForecast = function (_Component) {
 
 		var _this = _possibleConstructorReturn(this, (FourDaysForecast.__proto__ || Object.getPrototypeOf(FourDaysForecast)).call(this, props));
 
-		_this.forecastContainer = document.createElement('div');
-		_this.forecastContainer.classList.add('container__forecast-wraapper');
-		_this.host = document.getElementById('container');
+		_this.host = _this.host = document.getElementById('container');
+		_this.fourDays = document.createElement('div');
+		_this.fourDays.classList.add('container__forecast-fourDays');
 		return _this;
 	}
 
 	_createClass(FourDaysForecast, [{
 		key: 'render',
 		value: function render(data) {
-			var weather = data.forecastday;
-			for (var i = 0; i < weather.length; i++) {
-				var periodWeather = document.createElement('div');
+			this.fourDays.innerHTML = '';
+			var weather = data;
+			for (var i = 0; i < 8; i++) {
 				var iconSrc = weather[i].icon_url;
-				var icon = iconSrc.replace('/k/', '/j/');
-				var iconAlt = weather[i].icon;
-				periodWeather.classList.add('container__forecast-period');
-				periodWeather.innerHTML = '\n\t\t\t<div>' + weather[i].title + '</div>\n\t\t\t<div><img src=\'' + icon + '\' alt=\'' + iconAlt + '\'></div>\n\t\t\t<div>Pop: ' + weather[i].pop + '</div>\n\t\t\t<div>' + weather[i].fcttext_metric + '</div>\n\t\t\t<hr><br>\n\t\t\t';
-				this.forecastContainer.appendChild(periodWeather);
+				var icon = iconSrc.replace('/k/', '/i/');
+				this.fourDays.innerHTML += '\n\t\t\t\t<div class=\'container__forecast-fourDays-period\'>\t\n\t\t\t\t\t<div class="container__forecast-title">' + weather[i].title + '</div>\n\t\t\t\t\t<div><img src=\'' + icon + '\' alt=\'' + weather[i].icon + '\'></div>\n\t\t\t\t\t<div><span class=\'bold\'>Pop:</span> ' + weather[i].pop + '%</div>\n\t\t\t\t\t<div>' + weather[i].fcttext_metric + '</div>\n\t\t\t\t</div>\t\n\t\t\t';
 			}
-			this.host.appendChild(this.forecastContainer);
+			this.host.children[3].appendChild(this.fourDays);
 		}
 	}]);
 
@@ -356,7 +390,7 @@ var FourDaysForecast = function (_Component) {
 }(_Facepalm.Component);
 
 exports.default = FourDaysForecast;
-},{"../Facepalm":10}],19:[function(require,module,exports) {
+},{"../Facepalm":15}],13:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -390,6 +424,7 @@ var Buttons = function (_Component) {
 		var btnNames = ['Hourly', '10 days'];
 		btnNames.forEach(function (item, i, btnsNames) {
 			var btn = document.createElement('button');
+			btn.classList.add('btns__btn');
 			btn.innerHTML = item;
 			_this.btns.appendChild(btn);
 		});
@@ -408,12 +443,12 @@ var Buttons = function (_Component) {
 		key: 'updateState',
 		value: function updateState(btn) {
 			this.state.btn = btn;
-			this.onClick();
+			this.onClick(this.state.btn);
 		}
 	}, {
 		key: 'onClick',
-		value: function onClick() {
-			this.props.onClick(this.state.btn);
+		value: function onClick(btn) {
+			this.props.onClick(btn);
 		}
 	}, {
 		key: 'render',
@@ -426,7 +461,7 @@ var Buttons = function (_Component) {
 }(_Facepalm.Component);
 
 exports.default = Buttons;
-},{"../Facepalm":10}],9:[function(require,module,exports) {
+},{"../Facepalm":15}],11:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -443,53 +478,40 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Login = function (_Component) {
-	_inherits(Login, _Component);
+var HourlyForecast = function (_Component) {
+	_inherits(HourlyForecast, _Component);
 
-	function Login(props) {
-		_classCallCheck(this, Login);
+	function HourlyForecast(props) {
+		_classCallCheck(this, HourlyForecast);
 
-		return _possibleConstructorReturn(this, (Login.__proto__ || Object.getPrototypeOf(Login)).call(this, props));
+		var _this = _possibleConstructorReturn(this, (HourlyForecast.__proto__ || Object.getPrototypeOf(HourlyForecast)).call(this, props));
+
+		_this.host = document.getElementById('container');
+		_this.hourly = document.createElement('div');
+		_this.hourly.classList.add('container__forecast-hourly');
+		return _this;
 	}
 
-	_createClass(Login, [{
+	_createClass(HourlyForecast, [{
 		key: 'render',
-		value: function render() {
-			console.log('sdsdsd');
+		value: function render(weather) {
+			this.hourly.innerHTML = '';
+			for (var i = 0; i < weather.length; i++) {
+				var iconSrc = weather[i].icon_url;
+				var icon = iconSrc.replace('/k/', '/i/');
+				this.hourly.innerHTML += '\n\t\t\t\t<div class=\'container__hourly-each\'>\n\t\t\t\t\t<div class="container__forecast-title">' + weather[i].FCTTIME.hour + ':' + weather[i].FCTTIME.min + ', ' + weather[i].FCTTIME.weekday_name + ', ' + weather[i].FCTTIME.month_name + ' ' + weather[i].FCTTIME.mday + ' </div>\n\t\t\t\t\t<div class="container__forecast-wrapper-conditions">\n\t\t\t\t\t\t<div class="container__forecast-wrapper-left">\n\t\t\t\t\t\t\t<div class=\'container__forecast-conditions-temp\'>' + weather[i].condition + ', ' + weather[i].temp.metric + '&deg;C</div>\n\t\t\t\t\t\t\t<div class=\'container__forecast-feelslike\'><span class="bold">Feelslike:</span> ' + weather[i].feelslike.metric + '&deg;C</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\'container__forecast-icon\'><img src=\'' + icon + '\' alt=\'' + weather[i].condition + '\'></div>\n\t\t\t\t\t</div>\t\n\t\t\t\t\t<div><span class=\'bold\'>Humidity:</span> ' + weather[i].humidity + '%</div>\n\t\t\t\t\t<div><span class=\'bold\'>Pressure:</span> ' + weather[i].mslp.metric + 'mb</div>\n\t\t\t\t\t<div><span class=\'bold\'>Wind:</span> ' + weather[i].wspd.metric + 'km/h. <span class=\'bold\'>Direction:</span> ' + weather[i].wdir.dir + '</div>\n\t\t\t\t</div>\t\n\t\t\t';
+			}
+			this.host.children[3].appendChild(this.hourly);
 		}
 	}]);
 
-	return Login;
+	return HourlyForecast;
 }(_Facepalm.Component);
 
-exports.default = Login;
-},{"../Facepalm":10}],6:[function(require,module,exports) {
-'use strict';
+;
 
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _App = require('./App');
-
-var _App2 = _interopRequireDefault(_App);
-
-var _Login = require('./components/Login');
-
-var _Login2 = _interopRequireDefault(_Login);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var routes = [{
-	component: _App2.default,
-	href: '/'
-}, {
-	component: _Login2.default,
-	href: '/login'
-}];
-
-exports.default = routes;
-},{"./App":8,"./components/Login":9}],5:[function(require,module,exports) {
+exports.default = HourlyForecast;
+},{"../Facepalm":15}],12:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -498,15 +520,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Facepalm = require('./Facepalm');
-
-var _routes = require('./routes');
-
-var _App = require('./App');
-
-var _App2 = _interopRequireDefault(_App);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _Facepalm = require('../Facepalm');
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -514,58 +528,40 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Router = function (_Component) {
-	_inherits(Router, _Component);
+var TenDays = function (_Component) {
+	_inherits(TenDays, _Component);
 
-	function Router(host, routes) {
-		_classCallCheck(this, Router);
+	function TenDays(props) {
+		_classCallCheck(this, TenDays);
 
-		var _this = _possibleConstructorReturn(this, (Router.__proto__ || Object.getPrototypeOf(Router)).call(this, host, routes));
+		var _this = _possibleConstructorReturn(this, (TenDays.__proto__ || Object.getPrototypeOf(TenDays)).call(this, props));
 
-		_this.state = {
-			routes: routes,
-			currentComponent: null
-		};
-
-		_this.host = host;
-		_this.routes = routes;
-		window.addEventListener("hashchange", _this.handleUrlChange.bind(_this));
-		var app = new _App2.default();
-		app.init(_this.host);
-		//console.log(app);
+		_this.host = document.getElementById('container');
+		_this.tenDays = document.createElement('div');
+		_this.tenDays.classList.add('container__forecast-tenDays');
 		return _this;
 	}
 
-	_createClass(Router, [{
-		key: 'handleUrlChange',
-		value: function handleUrlChange() {
-			for (var i = 0; i < this.routes.length; i++) {
-				if (this.routes[i].href != this.state.currentComponent) {
-					this.updateState(this.routes[i].href);
-				}
-			}
-		}
-	}, {
-		key: 'updateState',
-		value: function updateState(s) {
-			this.state.currentComponent = s;
-			console.log(this.state);
-		}
-	}, {
+	_createClass(TenDays, [{
 		key: 'render',
-		value: function render() {}
-	}, {
-		key: 'path',
-		get: function get() {
-			return window.location.hash.slice(1);
+		value: function render(weather) {
+			this.tenDays.innerHTML = '';
+			for (var i = 0; i < weather.length; i++) {
+				var iconSrc = weather[i].icon_url;
+				var icon = iconSrc.replace('/k/', '/i/');
+				this.tenDays.innerHTML += '\n\t\t\t\t<div class=\'container__daily-each\'>\t\n\t\t\t\t\t<div class="container__forecast-title">' + weather[i].date.weekday + ', ' + weather[i].date.monthname + ' ' + weather[i].date.day + '</div>\n\t\t\t\t\t<div class="container__forecast-wrapper-conditions">\n\t\t\t\t\t\t<div class="container__forecast-wrapper-left">\n\t\t\t\t\t\t\t<div class=\'container__forecast-conditions-temp\'>' + weather[i].conditions + ', <span class=\'bold\'>High:</span> ' + weather[i].high.celsius + '&deg;C, <span class=\'bold\'>Low:</span> ' + weather[i].low.celsius + '&deg;</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\'container__forecast-icon\'><img src=\'' + icon + '\' alt=\'' + weather[i].conditions + '\'></div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div><span class=\'bold\'>Pop:</span> ' + weather[i].pop + '%</div>\n\t\t\t\t\t<div><span class=\'bold\'>Quantitative Precipitation Forecasts:</span> ' + weather[i].qpf_allday.mm + 'mm</div>\n\t\t\t\t\t<div><span class=\'bold\'>Average humidity: ' + weather[i].avehumidity + '%</div>\n\t\t\t\t\t<div><span class=\'bold\'>Average wind:</span> ' + weather[i].avewind.kph + 'km/h. <span class=\'bold\'>Direction:</span> ' + weather[i].avewind.dir + ' </div>\n\t\t\t\t</div>\n\t\t\t';
+			}
+			this.host.children[3].appendChild(this.tenDays);
 		}
 	}]);
 
-	return Router;
+	return TenDays;
 }(_Facepalm.Component);
 
-exports.default = Router;
-},{"./Facepalm":10,"./routes":6,"./App":8}],8:[function(require,module,exports) {
+;
+
+exports.default = TenDays;
+},{"../Facepalm":15}],6:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -592,9 +588,15 @@ var _buttons = require('./components/buttons');
 
 var _buttons2 = _interopRequireDefault(_buttons);
 
-var _Router = require('./Router');
+var _hourlyForecast = require('./components/hourlyForecast');
 
-var _Router2 = _interopRequireDefault(_Router);
+var _hourlyForecast2 = _interopRequireDefault(_hourlyForecast);
+
+var _tenDays = require('./components/tenDays');
+
+var _tenDays2 = _interopRequireDefault(_tenDays);
+
+var _api = require('./utils/api');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -615,11 +617,10 @@ var App = function (_Component) {
 		_this.state = {
 			today: null,
 			fourDays: null,
+			hourly: null,
+			tenDays: null,
 			city: null,
-			coords: {
-				lat: null,
-				lng: null
-			}
+			period: 'today'
 		};
 		_this.host = host;
 		_this.locationSearch = new _locationSearch2.default({
@@ -628,6 +629,8 @@ var App = function (_Component) {
 		});
 		_this.todayForecast = new _todayForecast2.default();
 		_this.fourDaysForecast = new _fourDaysForecast2.default();
+		_this.hourlyForecast = new _hourlyForecast2.default();
+		_this.tenDays = new _tenDays2.default();
 		_this.buttons = new _buttons2.default({
 			onClick: _this.onClick.bind(_this)
 		});
@@ -639,35 +642,32 @@ var App = function (_Component) {
 		value: function onSubmit(city) {
 			var _this2 = this;
 
-			this.updateState(city);
-			fetch("http://api.wunderground.com/api/4fb16b2158d4827b/forecast/geolookup/conditions/q/" + city.coords.lat + "," + city.coords.lng + ".json").then(function (response) {
-				if (response.status !== 200) {
-					console.log('Looks like there was a problem. Status Code: ' + response.status);
-					return;
-				}
-				response.json().then(function (data) {
-					_this2.updateState(data, city.city);
-				});
+			(0, _api.getWeather)(city).then(function (data) {
+				_this2.updateState(data, city.city, 'today');
 			}).catch(function (err) {
-				console.log('Fetch Error :-S', err);
+				alert('Fetch Error :-S', err);
 			});
 		}
 	}, {
 		key: 'onClick',
 		value: function onClick(btn) {
-			//console.log(btn, this);
+			this.updateState(btn);
 		}
 	}, {
 		key: 'updateState',
-		value: function updateState(data, city) {
+		value: function updateState(data, city, period) {
 			if (!city) {
-				console.log(data);
+				this.state.period = data;
 			} else {
-				this.state.today = data.current_observation;
-				this.state.fourDays = data.forecast.txt_forecast;
+				//console.log(data);
+				this.state.period = period;
 				this.state.city = city;
-				this.render();
+				this.state.today = data.current_observation;
+				this.state.fourDays = data.forecast.txt_forecast.forecastday;
+				this.state.tenDays = data.forecast.simpleforecast.forecastday;
+				this.state.hourly = data.hourly_forecast;
 			}
+			this.render();
 		}
 	}, {
 		key: 'render',
@@ -675,8 +675,21 @@ var App = function (_Component) {
 			if (this.state.today != null) {
 				this.buttons.render(this.state);
 			}
-			this.todayForecast.render(this.state);
-			this.fourDaysForecast.render(this.state.fourDays);
+			switch (this.state.period) {
+				case 'today':
+					this.todayForecast.render(this.state);
+					this.fourDaysForecast.render(this.state.fourDays);
+					break;
+				case 'Hourly':
+					this.todayForecast.render(this.state);
+					this.hourlyForecast.render(this.state.hourly);
+					break;
+				case '10 days':
+					this.todayForecast.render(this.state);
+					this.tenDays.render(this.state.tenDays);
+					break;
+
+			}
 		}
 	}, {
 		key: 'init',
@@ -689,7 +702,7 @@ var App = function (_Component) {
 }(_Facepalm.Component);
 
 exports.default = App;
-},{"./Facepalm":10,"./components/locationSearch":12,"./components/todayForecast":14,"./components/fourDaysForecast":13,"./components/buttons":19,"./Router":5}],2:[function(require,module,exports) {
+},{"./Facepalm":15,"./components/locationSearch":10,"./components/todayForecast":9,"./components/fourDaysForecast":8,"./components/buttons":13,"./components/hourlyForecast":11,"./components/tenDays":12,"./utils/api":14}],3:[function(require,module,exports) {
 "use strict";
 
 var _App = require("./src/App");
@@ -701,7 +714,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var app = new _App2.default();
 
 app.init(document.getElementById("container"));
-},{"./src/App":8}],20:[function(require,module,exports) {
+},{"./src/App":6}],32:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -723,7 +736,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '58993' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '62028' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -824,5 +837,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[20,2])
+},{}]},{},[32,3])
 //# sourceMappingURL=/dist/WeatherApp1.map
