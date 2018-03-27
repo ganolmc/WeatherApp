@@ -16,7 +16,9 @@ class TenDays extends Component{
 					<div class="container__forecast-title">${weather[i].date.weekday}, ${weather[i].date.monthname} ${weather[i].date.day}</div>
 					<div class="container__forecast-wrapper-conditions">
 						<div class="container__forecast-wrapper-left">
-							<div class='container__forecast-conditions-temp'>${weather[i].conditions}, <span class='bold'>High:</span> ${weather[i].high.celsius}&deg;C, <span class='bold'>Low:</span> ${weather[i].low.celsius}&deg;</div>
+							<div class='container__forecast-conditions-temp'>${weather[i].conditions}
+							<div><span class='bold'>High:</span> ${weather[i].high.celsius}&deg;C, <span class='bold'>Low:</span> ${weather[i].low.celsius}&deg;</div>
+							</div>
 						</div>
 						<div class='container__forecast-icon'><img src='${icon}' alt='${weather[i].conditions}'></div>
 					</div>

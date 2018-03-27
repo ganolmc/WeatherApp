@@ -71,7 +71,7 @@ require = (function (modules, cache, entry) {
 
   // Override the current require with this new one
   return newRequire;
-})({7:[function(require,module,exports) {
+})({14:[function(require,module,exports) {
 var bundleURL = null;
 function getBundleURLCached() {
   if (!bundleURL) {
@@ -101,7 +101,7 @@ function getBaseURL(url) {
 
 exports.getBundleURL = getBundleURLCached;
 exports.getBaseURL = getBaseURL;
-},{}],4:[function(require,module,exports) {
+},{}],5:[function(require,module,exports) {
 var bundle = require('./bundle-url');
 
 function updateLink(link) {
@@ -132,13 +132,13 @@ function reloadCSS() {
 }
 
 module.exports = reloadCSS;
-},{"./bundle-url":7}],2:[function(require,module,exports) {
+},{"./bundle-url":14}],3:[function(require,module,exports) {
 
         var reloadCSS = require('_css_loader');
         module.hot.dispose(reloadCSS);
         module.hot.accept(reloadCSS);
       
-},{"./img\\main-bg.png":5,"_css_loader":4}],17:[function(require,module,exports) {
+},{"./img\\main-bg.png":12,"_css_loader":5}],17:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -160,7 +160,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '60081' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '51692' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -340,7 +340,7 @@ LazyPromise.prototype.then = function (onSuccess, onError) {
 LazyPromise.prototype.catch = function (onError) {
   return this.promise || (this.promise = new Promise(this.executor).catch(onError));
 };
-},{"./bundle-url":7}],0:[function(require,module,exports) {
-var b=require(19);b.load([["f4b3ca79768186de20120c883b1da805.png",5]]);
+},{"./bundle-url":14}],0:[function(require,module,exports) {
+var b=require(19);b.load([["279a62bbba7a4ee266899e4b2c5f1c94.png",12]]);
 },{}]},{},[17,0])
-//# sourceMappingURL=/dist/46c742f0181976b9bcdc0047e800a40f.map
+//# sourceMappingURL=/dist/f6d3d721b4dc1fd75c96129089dfe008.map

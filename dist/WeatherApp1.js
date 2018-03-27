@@ -148,7 +148,7 @@ Object.defineProperty(exports, 'Component', {
 });
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./Component":16}],14:[function(require,module,exports) {
+},{"./Component":16}],13:[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -176,11 +176,11 @@ var coords = exports.coords = function coords(location) {
     });
   });
 };
-},{}],10:[function(require,module,exports) {
+},{}],6:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+    value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -196,96 +196,133 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var LocationSearch = function (_Component) {
-	_inherits(LocationSearch, _Component);
+    _inherits(LocationSearch, _Component);
 
-	function LocationSearch(props) {
-		_classCallCheck(this, LocationSearch);
+    function LocationSearch(props) {
+        _classCallCheck(this, LocationSearch);
 
-		var _this = _possibleConstructorReturn(this, (LocationSearch.__proto__ || Object.getPrototypeOf(LocationSearch)).call(this, props));
+        var _this = _possibleConstructorReturn(this, (LocationSearch.__proto__ || Object.getPrototypeOf(LocationSearch)).call(this, props));
 
-		_this.state = {
-			isValid: true,
-			coords: {
-				lat: null,
-				lng: null
-			},
-			city: null
-		};
-		_this.host = document.createElement('div');
-		_this.host.classList.add('container__search');
-		_this.searchForm = document.createElement('form');
-		_this.searchForm.classList.add('weather-form');
-		_this.searchInput = document.createElement('input');
-		_this.searchInput.classList.add('search-weather');
-		_this.searchInput.setAttribute('name', 'search');
-		_this.searchButton = document.createElement('button');
-		_this.searchButton.classList.add('search-submit');
-		_this.searchButton.innerHTML = 'Get Weather';
-		_this.searchError = document.createElement('div');
-		_this.searchError.classList.add('form-error');
-		_this.searchForm.appendChild(_this.searchInput);
-		_this.searchForm.appendChild(_this.searchButton);
-		_this.searchForm.appendChild(_this.searchError);
-		var autocomplete = new google.maps.places.Autocomplete(_this.searchInput, {
-			types: ['(cities)']
-		});
-		window.google.maps.event.clearInstanceListeners(_this.host);
-		window.google.maps.event.addListener(autocomplete, 'place_changed', _this.handlePlaceChange.bind(_this));
-		_this.host.addEventListener('submit', _this.handleSubmit.bind(_this));
-		return _this;
-	}
+        _this.state = {
+            isValid: true,
+            coords: {
+                lat: null,
+                lng: null
+            },
+            city: null
+        };
+        _this.host = document.createElement('div');
+        _this.host.classList.add('container__search');
+        _this.searchForm = document.createElement('form');
+        _this.searchForm.classList.add('weather-form');
+        _this.searchInput = document.createElement('input');
+        _this.searchInput.classList.add('search-weather');
+        _this.searchInput.setAttribute('name', 'search');
+        _this.searchButton = document.createElement('button');
+        _this.searchButton.classList.add('search-submit');
+        _this.searchButton.innerHTML = 'Get Weather';
+        _this.searchError = document.createElement('div');
+        _this.searchError.classList.add('form-error');
+        _this.recent = document.createElement('div');
+        _this.recent.classList.add('recent');
+        _this.recent.innerHTML = '<button>Recent</button>';
+        _this.favorites = document.createElement('div');
+        _this.favorites.classList.add('favorites');
+        _this.favorites.innerHTML = '<button>Favorites</button>';
+        _this.btnWrapper = document.createElement('div');
+        _this.btnWrapper.classList.add('btn-wrapper');
+        _this.btnWrapper.appendChild(_this.recent);
+        _this.btnWrapper.appendChild(_this.favorites);
+        _this.searchForm.appendChild(_this.searchInput);
+        _this.searchForm.appendChild(_this.searchButton);
+        _this.searchForm.appendChild(_this.searchError);
+        var autocomplete = new google.maps.places.Autocomplete(_this.searchInput, {
+            types: ['(cities)']
+        });
+        window.google.maps.event.clearInstanceListeners(_this.host);
+        window.google.maps.event.addListener(autocomplete, 'place_changed', _this.handlePlaceChange.bind(_this));
+        _this.host.addEventListener('submit', _this.handleSubmit.bind(_this));
+        _this.btnWrapper.addEventListener('click', _this.onClickBtnsWrapper.bind(_this));
+        return _this;
+    }
 
-	_createClass(LocationSearch, [{
-		key: 'handlePlaceChange',
-		value: function handlePlaceChange() {
-			var _this2 = this;
+    _createClass(LocationSearch, [{
+        key: 'handlePlaceChange',
+        value: function handlePlaceChange() {
+            var _this2 = this;
 
-			this.searchInput.classList.remove('invalid');
-			(0, _api.coords)(this.searchInput.value).then(function (coords) {
-				_this2.state.coords.lat = coords[0];
-				_this2.state.coords.lng = coords[1];
-			});
-			this.state.city = this.searchInput.value;
-		}
-	}, {
-		key: 'updateState',
-		value: function updateState(nextState) {
-			this.state = Object.assign({}, this.state, nextState);
-			this.render();
-		}
-	}, {
-		key: 'handleSubmit',
-		value: function handleSubmit(e) {
-			e.preventDefault();
-			var city = e.target.elements.search.value.trim();
-			if (!city.length) {
-				this.updateState({ isValid: false });
-				this.searchError.innerHTML = '\n\t\t\t\t<p class=\'error\'>It seems, that you didn\'t enter anything</p>\n\t\t\t';
-				this.searchInput.classList.add('invalid');
-			} else if (this.state.city == null) {
-				this.updateState({ isValid: false });
-				this.searchError.innerHTML = '\n\t\t\t\t<p class=\'error\'>Please, choose location from dropdown</p>\n\t\t\t';
-				this.searchInput.classList.add('invalid');
-			} else {
-				this.searchError.innerHTML = '';
-				this.props.onSubmit(this.state);
-			}
-		}
-	}, {
-		key: 'render',
-		value: function render() {
-			var isValid = this.state.isValid;
+            this.searchInput.classList.remove('invalid');
+            (0, _api.coords)(this.searchInput.value).then(function (coords) {
+                _this2.state.coords.lat = coords[0];
+                _this2.state.coords.lng = coords[1];
+            });
+            this.state.city = this.searchInput.value;
+        }
+    }, {
+        key: 'onClickBtnsWrapper',
+        value: function onClickBtnsWrapper(e) {
+            var storage = window.localStorage;
+            var citiesArr = [];
+            if (e.target.innerHTML == 'Recent') {
+                citiesArr = storage.getItem("recentCities");
+                if (citiesArr) {
+                    citiesArr = JSON.parse(citiesArr);
+                }
+            } else if (e.target.innerHTML == 'Favorites') {
+                citiesArr = storage.getItem("favoriteCities");
+                if (citiesArr) {
+                    citiesArr = JSON.parse(citiesArr);
+                }
+            }
+            var citiesList = document.createElement('div');
+            for (var i = 1; i < citiesArr.length; i++) {
+                var city = document.createElement('div');
+                city.innerHTML = '<a href=\'\'>' + citiesArr[i] + '</a>';
+                citiesList.appendChild(city);
+            }
+            this.btnWrapper.appendChild(citiesList);
+            console.log(e.target.innerHTML);
+        }
+    }, {
+        key: 'updateState',
+        value: function updateState(nextState) {
+            this.state = Object.assign({}, this.state, nextState);
+            this.render();
+        }
+    }, {
+        key: 'handleSubmit',
+        value: function handleSubmit(e) {
+            e.preventDefault();
+            var city = e.target.elements.search.value.trim();
+            if (!city.length) {
+                this.updateState({ isValid: false });
+                this.searchError.innerHTML = '\n\t\t\t\t<p class=\'error\'>It seems, that you didn\'t enter anything</p>\n\t\t\t';
+                this.searchInput.classList.add('invalid');
+            } else if (this.state.city == null) {
+                this.updateState({ isValid: false });
+                this.searchError.innerHTML = '\n\t\t\t\t<p class=\'error\'>Please, choose location from dropdown</p>\n\t\t\t';
+                this.searchInput.classList.add('invalid');
+            } else {
+                this.searchError.innerHTML = '';
+                setTimeout(this.props.onSubmit(this.state), 1000);
+            }
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            var isValid = this.state.isValid;
 
-			this.host.appendChild(this.searchForm);
-			return this.host;
-		}
-	}]);
+            this.host.appendChild(this.searchForm);
+            this.host.appendChild(this.btnWrapper);
+            return this.host;
+        }
+    }]);
 
-	return LocationSearch;
+    return LocationSearch;
 }(_Facepalm.Component);
 
 exports.default = LocationSearch;
-},{"../Facepalm":15,"../utils/api.js":14}],9:[function(require,module,exports) {
+},{"../Facepalm":15,"../utils/api.js":13}],7:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -390,11 +427,11 @@ var FourDaysForecast = function (_Component) {
 }(_Facepalm.Component);
 
 exports.default = FourDaysForecast;
-},{"../Facepalm":15}],13:[function(require,module,exports) {
+},{"../Facepalm":15}],9:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+    value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -408,60 +445,70 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var Buttons = function (_Component) {
-	_inherits(Buttons, _Component);
+    _inherits(Buttons, _Component);
 
-	function Buttons(props) {
-		_classCallCheck(this, Buttons);
+    function Buttons(props) {
+        _classCallCheck(this, Buttons);
 
-		var _this = _possibleConstructorReturn(this, (Buttons.__proto__ || Object.getPrototypeOf(Buttons)).call(this, props));
+        var _this = _possibleConstructorReturn(this, (Buttons.__proto__ || Object.getPrototypeOf(Buttons)).call(this, props));
 
-		_this.state = {
-			btn: null
-		};
-		_this.btns = document.createElement('div');
-		_this.btns.classList.add('btns');
-		_this.host = document.getElementById('container');
-		var btnNames = ['Hourly', '10 days'];
-		btnNames.forEach(function (item, i, btnsNames) {
-			var btn = document.createElement('button');
-			btn.classList.add('btns__btn');
-			btn.innerHTML = item;
-			_this.btns.appendChild(btn);
-		});
-		_this.btns.addEventListener('click', _this.handleClick.bind(_this));
-		return _this;
-	}
+        _this.state = {
+            btn: null,
+            city: null
+        };
+        _this.favorites = document.createElement('button');
+        _this.favorites.classList.add('btns');
+        _this.btns = document.createElement('div');
+        _this.btns.classList.add('btns');
+        _this.host = document.getElementById('container');
+        var btnNames = ['Hourly', '10 days'];
+        btnNames.forEach(function (item, i, btnsNames) {
+            var btn = document.createElement('button');
+            btn.classList.add('btns__btn');
+            btn.innerHTML = item;
+            _this.btns.appendChild(btn);
+        });
+        _this.btns.appendChild(_this.favorites);
+        _this.btns.addEventListener('click', _this.handleClick.bind(_this));
 
-	_createClass(Buttons, [{
-		key: 'handleClick',
-		value: function handleClick(e) {
-			if (e.target.tagName == 'BUTTON') {
-				this.updateState(e.target.innerHTML);
-			}
-		}
-	}, {
-		key: 'updateState',
-		value: function updateState(btn) {
-			this.state.btn = btn;
-			this.onClick(this.state.btn);
-		}
-	}, {
-		key: 'onClick',
-		value: function onClick(btn) {
-			this.props.onClick(btn);
-		}
-	}, {
-		key: 'render',
-		value: function render() {
-			this.host.appendChild(this.btns);
-		}
-	}]);
+        return _this;
+    }
 
-	return Buttons;
+    _createClass(Buttons, [{
+        key: 'handleClick',
+        value: function handleClick(e) {
+            if (e.target.tagName == 'BUTTON') {
+                this.updateState(e.target.innerHTML);
+            }
+        }
+    }, {
+        key: 'updateState',
+        value: function updateState(btn) {
+            this.state.btn = btn;
+            this.onClick(this.state.btn);
+        }
+    }, {
+        key: 'onClick',
+        value: function onClick(btn) {
+            this.props.onClick(btn);
+        }
+    }, {
+        key: 'render',
+        value: function render(state) {
+            if (state.isFav == false) {
+                this.favorites.innerHTML = 'Add';
+            } else {
+                this.favorites.innerHTML = 'Remove';
+            }
+            this.host.appendChild(this.btns);
+        }
+    }]);
+
+    return Buttons;
 }(_Facepalm.Component);
 
 exports.default = Buttons;
-},{"../Facepalm":15}],11:[function(require,module,exports) {
+},{"../Facepalm":15}],10:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -511,7 +558,7 @@ var HourlyForecast = function (_Component) {
 ;
 
 exports.default = HourlyForecast;
-},{"../Facepalm":15}],12:[function(require,module,exports) {
+},{"../Facepalm":15}],11:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -549,7 +596,7 @@ var TenDays = function (_Component) {
 			for (var i = 0; i < weather.length; i++) {
 				var iconSrc = weather[i].icon_url;
 				var icon = iconSrc.replace('/k/', '/i/');
-				this.tenDays.innerHTML += '\n\t\t\t\t<div class=\'container__daily-each\'>\t\n\t\t\t\t\t<div class="container__forecast-title">' + weather[i].date.weekday + ', ' + weather[i].date.monthname + ' ' + weather[i].date.day + '</div>\n\t\t\t\t\t<div class="container__forecast-wrapper-conditions">\n\t\t\t\t\t\t<div class="container__forecast-wrapper-left">\n\t\t\t\t\t\t\t<div class=\'container__forecast-conditions-temp\'>' + weather[i].conditions + ', <span class=\'bold\'>High:</span> ' + weather[i].high.celsius + '&deg;C, <span class=\'bold\'>Low:</span> ' + weather[i].low.celsius + '&deg;</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\'container__forecast-icon\'><img src=\'' + icon + '\' alt=\'' + weather[i].conditions + '\'></div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div><span class=\'bold\'>Pop:</span> ' + weather[i].pop + '%</div>\n\t\t\t\t\t<div><span class=\'bold\'>Quantitative Precipitation Forecasts:</span> ' + weather[i].qpf_allday.mm + 'mm</div>\n\t\t\t\t\t<div><span class=\'bold\'>Average humidity: ' + weather[i].avehumidity + '%</div>\n\t\t\t\t\t<div><span class=\'bold\'>Average wind:</span> ' + weather[i].avewind.kph + 'km/h. <span class=\'bold\'>Direction:</span> ' + weather[i].avewind.dir + ' </div>\n\t\t\t\t</div>\n\t\t\t';
+				this.tenDays.innerHTML += '\n\t\t\t\t<div class=\'container__daily-each\'>\t\n\t\t\t\t\t<div class="container__forecast-title">' + weather[i].date.weekday + ', ' + weather[i].date.monthname + ' ' + weather[i].date.day + '</div>\n\t\t\t\t\t<div class="container__forecast-wrapper-conditions">\n\t\t\t\t\t\t<div class="container__forecast-wrapper-left">\n\t\t\t\t\t\t\t<div class=\'container__forecast-conditions-temp\'>' + weather[i].conditions + '\n\t\t\t\t\t\t\t<div><span class=\'bold\'>High:</span> ' + weather[i].high.celsius + '&deg;C, <span class=\'bold\'>Low:</span> ' + weather[i].low.celsius + '&deg;</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\'container__forecast-icon\'><img src=\'' + icon + '\' alt=\'' + weather[i].conditions + '\'></div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div><span class=\'bold\'>Pop:</span> ' + weather[i].pop + '%</div>\n\t\t\t\t\t<div><span class=\'bold\'>Quantitative Precipitation Forecasts:</span> ' + weather[i].qpf_allday.mm + 'mm</div>\n\t\t\t\t\t<div><span class=\'bold\'>Average humidity: ' + weather[i].avehumidity + '%</div>\n\t\t\t\t\t<div><span class=\'bold\'>Average wind:</span> ' + weather[i].avewind.kph + 'km/h. <span class=\'bold\'>Direction:</span> ' + weather[i].avewind.dir + ' </div>\n\t\t\t\t</div>\n\t\t\t';
 			}
 			this.host.children[3].appendChild(this.tenDays);
 		}
@@ -561,11 +608,11 @@ var TenDays = function (_Component) {
 ;
 
 exports.default = TenDays;
-},{"../Facepalm":15}],6:[function(require,module,exports) {
+},{"../Facepalm":15}],4:[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+    value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -607,102 +654,192 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var App = function (_Component) {
-	_inherits(App, _Component);
+    _inherits(App, _Component);
 
-	function App(host) {
-		_classCallCheck(this, App);
+    function App(host) {
+        _classCallCheck(this, App);
 
-		var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, host));
+        var _this = _possibleConstructorReturn(this, (App.__proto__ || Object.getPrototypeOf(App)).call(this, host));
 
-		_this.state = {
-			today: null,
-			fourDays: null,
-			hourly: null,
-			tenDays: null,
-			city: null,
-			period: 'today'
-		};
-		_this.host = host;
-		_this.locationSearch = new _locationSearch2.default({
-			city: _this.state.city,
-			onSubmit: _this.onSubmit.bind(_this)
-		});
-		_this.todayForecast = new _todayForecast2.default();
-		_this.fourDaysForecast = new _fourDaysForecast2.default();
-		_this.hourlyForecast = new _hourlyForecast2.default();
-		_this.tenDays = new _tenDays2.default();
-		_this.buttons = new _buttons2.default({
-			onClick: _this.onClick.bind(_this)
-		});
-		return _this;
-	}
+        _this.state = {
+            today: null,
+            fourDays: null,
+            hourly: null,
+            tenDays: null,
+            city: null,
+            period: 'today',
+            isFav: false
+        };
+        _this.host = host;
+        _this.locationSearch = new _locationSearch2.default({
+            city: _this.state.city,
+            onSubmit: _this.onSubmit.bind(_this),
+            addFavourite: _this.updateFavourites
+        });
+        _this.todayForecast = new _todayForecast2.default();
+        _this.fourDaysForecast = new _fourDaysForecast2.default();
+        _this.hourlyForecast = new _hourlyForecast2.default();
+        _this.tenDays = new _tenDays2.default();
+        _this.buttons = new _buttons2.default({
+            onClick: _this.onClick.bind(_this)
+        });
+        _this.storage = window.localStorage;
+        return _this;
+    }
 
-	_createClass(App, [{
-		key: 'onSubmit',
-		value: function onSubmit(city) {
-			var _this2 = this;
+    _createClass(App, [{
+        key: 'onSubmit',
+        value: function onSubmit(city) {
+            var _this2 = this;
 
-			(0, _api.getWeather)(city).then(function (data) {
-				_this2.updateState(data, city.city, 'today');
-			}).catch(function (err) {
-				alert('Fetch Error :-S', err);
-			});
-		}
-	}, {
-		key: 'onClick',
-		value: function onClick(btn) {
-			this.updateState(btn);
-		}
-	}, {
-		key: 'updateState',
-		value: function updateState(data, city, period) {
-			if (!city) {
-				this.state.period = data;
-			} else {
-				//console.log(data);
-				this.state.period = period;
-				this.state.city = city;
-				this.state.today = data.current_observation;
-				this.state.fourDays = data.forecast.txt_forecast.forecastday;
-				this.state.tenDays = data.forecast.simpleforecast.forecastday;
-				this.state.hourly = data.hourly_forecast;
-			}
-			this.render();
-		}
-	}, {
-		key: 'render',
-		value: function render() {
-			if (this.state.today != null) {
-				this.buttons.render(this.state);
-			}
-			switch (this.state.period) {
-				case 'today':
-					this.todayForecast.render(this.state);
-					this.fourDaysForecast.render(this.state.fourDays);
-					break;
-				case 'Hourly':
-					this.todayForecast.render(this.state);
-					this.hourlyForecast.render(this.state.hourly);
-					break;
-				case '10 days':
-					this.todayForecast.render(this.state);
-					this.tenDays.render(this.state.tenDays);
-					break;
+            (0, _api.getWeather)(city).then(function (data) {
+                _this2.updateState(data, city.city, 'today');
+            }).catch(function (err) {
+                alert('Something went wrong with weather server. Try again, please', err);
+            });
+        }
+    }, {
+        key: 'onClick',
+        value: function onClick(btn) {
+            if (btn == 'Add' || 'Remove') {
+                if (btn == "Add") {
+                    this.state.isFav == true;
+                } else {
+                    this.state.isFav == false;
+                }
+                this.updateFavourites(btn);
+            } else {
+                this.updateState(btn);
+            }
+        }
+    }, {
+        key: 'updateState',
+        value: function updateState(data, city, period) {
+            if (!city) {
+                this.state.period = data;
+            } else {
+                this.state.period = period;
+                this.state.city = city;
+                this.state.today = data.current_observation;
+                this.state.fourDays = data.forecast.txt_forecast.forecastday;
+                this.state.tenDays = data.forecast.simpleforecast.forecastday;
+                this.state.hourly = data.hourly_forecast;
+            }
+            this.updateRecent(city);
+            this.render();
+        }
+    }, {
+        key: 'updateRecent',
+        value: function updateRecent(city) {
+            if (city) {
+                var recent = this.storage.getItem("recentCities");
+                var citiesArr = [];
+                if (recent) {
+                    citiesArr = JSON.parse(recent);
+                    citiesArr.forEach(function (item, index) {
+                        if (item == city) {
+                            citiesArr.splice(index, 1);
+                        }
+                    });
+                    if (citiesArr.length == 10) {
+                        citiesArr.shift();
+                    }
+                    citiesArr.push(city);
+                    this.storage.setItem("recentCities", JSON.stringify(citiesArr));
+                } else {
+                    citiesArr.push(city);
+                    this.storage.setItem("recentCities", JSON.stringify(citiesArr));
+                }
+            }
+        }
+    }, {
+        key: 'updateFavourites',
+        value: function updateFavourites(btn) {
+            var _this3 = this;
 
-			}
-		}
-	}, {
-		key: 'init',
-		value: function init(host) {
-			host.appendChild(this.locationSearch.render());
-		}
-	}]);
+            var city = this.state.city;
 
-	return App;
+            var favorite = this.storage.getItem("favoriteCities");
+            var citiesArr = [];
+            if (btn == 'Add') {
+                if (favorite) {
+                    citiesArr = JSON.parse(favorite);
+                    citiesArr.forEach(function (item, index) {
+                        if (item == city) {
+                            citiesArr.splice(index, 1);
+                        }
+                    });
+                    if (citiesArr.length == 10) {
+                        citiesArr.shift();
+                    }
+                    citiesArr.push(city);
+                    this.storage.setItem("favoriteCities", JSON.stringify(citiesArr));
+                } else {
+                    citiesArr.push(city);
+                    this.storage.setItem("favoriteCities", JSON.stringify(citiesArr));
+                }
+            } else if (btn == 'Remove') {
+                citiesArr = JSON.parse(favorite);
+                citiesArr.forEach(function (item, index) {
+                    if (item == city) {
+                        citiesArr.splice(index, 1);
+                        _this3.state.isFav = false;
+                        _this3.storage.setItem("favoriteCities", JSON.stringify(citiesArr));
+                    }
+                });
+            }
+            this.render();
+        }
+    }, {
+        key: 'checkFavorite',
+        value: function checkFavorite() {
+            var _this4 = this;
+
+            var citiesArr = this.storage.getItem('favoriteCities');
+            if (citiesArr) {
+                citiesArr = JSON.parse(citiesArr);
+                citiesArr.forEach(function (item, index) {
+                    if (item == _this4.state.city) {
+                        _this4.state.isFav = true;
+                    }
+                });
+            }
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            if (this.state.today != null) {
+                this.checkFavorite();
+                this.buttons.render(this.state);
+            }
+            switch (this.state.period) {
+                case 'today':
+                    this.todayForecast.render(this.state);
+                    this.fourDaysForecast.render(this.state.fourDays);
+                    break;
+                case 'Hourly':
+                    this.todayForecast.render(this.state);
+                    this.hourlyForecast.render(this.state.hourly);
+                    break;
+                case '10 days':
+                    this.todayForecast.render(this.state);
+                    this.tenDays.render(this.state.tenDays);
+                    break;
+
+            }
+        }
+    }, {
+        key: 'init',
+        value: function init(host) {
+            host.appendChild(this.locationSearch.render());
+        }
+    }]);
+
+    return App;
 }(_Facepalm.Component);
 
 exports.default = App;
-},{"./Facepalm":15,"./components/locationSearch":10,"./components/todayForecast":9,"./components/fourDaysForecast":8,"./components/buttons":13,"./components/hourlyForecast":11,"./components/tenDays":12,"./utils/api":14}],3:[function(require,module,exports) {
+},{"./Facepalm":15,"./components/locationSearch":6,"./components/todayForecast":7,"./components/fourDaysForecast":8,"./components/buttons":9,"./components/hourlyForecast":10,"./components/tenDays":11,"./utils/api":13}],2:[function(require,module,exports) {
 "use strict";
 
 var _App = require("./src/App");
@@ -714,7 +851,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var app = new _App2.default();
 
 app.init(document.getElementById("container"));
-},{"./src/App":6}],32:[function(require,module,exports) {
+},{"./src/App":4}],26:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -736,7 +873,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '62028' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '51692' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -837,5 +974,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[32,3])
+},{}]},{},[26,2])
 //# sourceMappingURL=/dist/WeatherApp1.map
