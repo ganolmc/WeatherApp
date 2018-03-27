@@ -8,7 +8,7 @@ class Buttons extends Component {
             city: null
         };
         this.favorites = document.createElement('button');
-        this.favorites.classList.add('btns');
+        this.favorites.classList.add('btns__btn');
         this.btns = document.createElement('div');
         this.btns.classList.add('btns');
         this.host = document.getElementById('container');
@@ -37,9 +37,9 @@ class Buttons extends Component {
     }
     render(state) {
         if (state.isFav == false) {
-            this.favorites.innerHTML = 'Add';
+            this.favorites.innerHTML = 'Add to favorites';
         } else {
-            this.favorites.innerHTML = 'Remove';
+            this.favorites.innerHTML = 'Remove from favorites';
         }
         this.host.appendChild(this.btns);
     }

@@ -26,10 +26,10 @@ class LocationSearch extends Component {
         this.searchError.classList.add('form-error');
         this.recent = document.createElement('div');
         this.recent.classList.add('recent');
-        this.recent.innerHTML = `<button>Recent</button>`;
+        this.recent.innerHTML = `<button class="btns__btn">Recent</button>`;
         this.favorites = document.createElement('div');
         this.favorites.classList.add('favorites');
-        this.favorites.innerHTML = `<button>Favorites</button>`;
+        this.favorites.innerHTML = `<button class="btns__btn">Favorites</button>`;
         this.btnWrapper = document.createElement('div');
         this.btnWrapper.classList.add('btn-wrapper');
         this.btnWrapper.appendChild(this.recent);
@@ -37,6 +37,9 @@ class LocationSearch extends Component {
         this.searchForm.appendChild(this.searchInput);
         this.searchForm.appendChild(this.searchButton);
         this.searchForm.appendChild(this.searchError);
+        this.citiesList = document.createElement('div');
+        this.citiesList.classList.add('btns-wrapper__cities-list');
+        this.citiesList.addEventListener('click', this.onClickCitiesList.bind(this));
         let autocomplete = new google.maps.places.Autocomplete((this.searchInput), {
             types: [`(cities)`],
         });
@@ -59,24 +62,33 @@ class LocationSearch extends Component {
         let storage = window.localStorage;
         let citiesArr = [];
         if (e.target.innerHTML == 'Recent') {
+            this.citiesList.innerHTML = '';
+            this.citiesList.innerHTML = `
+            <p class='btn-wrapper__list-title'>${e.target.innerHTML} cities:</p>
+        `;
             citiesArr = storage.getItem("recentCities");
             if (citiesArr) {
                 citiesArr = JSON.parse(citiesArr);
             }
         } else if (e.target.innerHTML == 'Favorites') {
+            this.citiesList.innerHTML = '';
+            this.citiesList.innerHTML = `
+            <p class='btn-wrapper__list-title'>${e.target.innerHTML} cities:</p>
+        `;
             citiesArr = storage.getItem("favoriteCities");
             if (citiesArr) {
                 citiesArr = JSON.parse(citiesArr);
             }
         }
-        const citiesList = document.createElement('div');
-        for (let i = 1; i < citiesArr.length; i++) {
+
+        for (let i = 0; i < citiesArr.length; i++) {
             let city = document.createElement('div');
-            city.innerHTML = `<a href=''>${citiesArr[i]}</a>`;
-            citiesList.appendChild(city);
+            city.classList.add('btns-wrapper__cities-list-item');
+            city.innerHTML = `<a href='' class='btns-wrapper__cities-list-link' data-lat=${citiesArr[i].lat} data-lng=${citiesArr[i].lng}>${citiesArr[i].city}</a>`;
+            this.citiesList.appendChild(city);
         }
-        this.btnWrapper.appendChild(citiesList);
-        console.log(e.target.innerHTML);
+        
+        this.btnWrapper.appendChild(this.citiesList);
     }
     updateState(nextState) {
         this.state = Object.assign({}, this.state, nextState);
@@ -103,6 +115,16 @@ class LocationSearch extends Component {
         }
 
     }
+
+    onClickCitiesList(e) {
+        e.preventDefault();
+        this.state.city = e.target.innerHTML;
+        this.state.coords.lat = e.target.dataset.lat;
+        this.state.coords.lng = e.target.dataset.lng;
+        this.citiesList.innerHTML = '';
+        setTimeout(this.props.onSubmit(this.state), 1000);
+    }
+
     render() {
         const { isValid } = this.state;
         this.host.appendChild(this.searchForm);

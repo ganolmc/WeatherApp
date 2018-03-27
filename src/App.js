@@ -37,15 +37,16 @@ class App extends Component {
 
     onSubmit(city) {
         getWeather(city).then((data) => {
-            this.updateState(data, city.city, 'today')
+            this.updateState(data, city, 'today')
         }).catch(function(err) {
             alert('Something went wrong with weather server. Try again, please', err);
         });
     }
 
     onClick(btn) {
-        if (btn == 'Add' || 'Remove') {
-            if (btn == "Add") {
+        console.log(btn);
+        if (btn == 'Add to favorites' || 'Remove from favorites') {
+            if (btn == "Add to favorites") {
                 this.state.isFav == true;
             } else {
                 this.state.isFav == false;
@@ -62,60 +63,68 @@ class App extends Component {
             this.state.period = data;
         } else {
             this.state.period = period;
-            this.state.city = city;
+            this.state.city = city.city;
             this.state.today = data.current_observation;
             this.state.fourDays = data.forecast.txt_forecast.forecastday;
             this.state.tenDays = data.forecast.simpleforecast.forecastday;
             this.state.hourly = data.hourly_forecast;
         }
-        this.updateRecent(city);
+        this.updateRecent(city,data);
         this.render();
     }
 
-    updateRecent(city) {
+    updateRecent(city, data) {
         if (city) {
-            let recent = this.storage.getItem("recentCities");
+             let recent = this.storage.getItem("recentCities");
             let citiesArr = [];
+            const newCity = {
+                city: city.city,
+                lat: city.coords.lat,
+                lng: city.coords.lng
+            };
             if (recent) {
                 citiesArr = JSON.parse(recent);
                 citiesArr.forEach((item, index) => {
-                    if (item == city) {
+                    if (item.city == city.city) {
                         citiesArr.splice(index, 1);
                     }
                 });
                 if (citiesArr.length == 10) { citiesArr.shift(); }
-                citiesArr.push(city);
+                citiesArr.push(newCity);
                 this.storage.setItem("recentCities", JSON.stringify(citiesArr));
             } else {
-                citiesArr.push(city);
+                citiesArr.push(newCity);
                 this.storage.setItem("recentCities", JSON.stringify(citiesArr));
             }
         }
     }
 
     updateFavourites(btn) {
-        const { city } = this.state;
+        const recent = this.storage.getItem("recentCities");
         let favorite = this.storage.getItem("favoriteCities");
+        const recentArr = JSON.parse(recent);
+        const lastCity = recentArr[recentArr.length -1];
         let citiesArr = [];
-        if (btn == 'Add') {
+        if (btn == 'Add to favorites') {
             if (favorite) {
+                this.state.isFav = true;
                 citiesArr = JSON.parse(favorite);
                 citiesArr.forEach((item, index) => {
-                    if (item == city) {
+                    if (item == lastCity.city) {
                         citiesArr.splice(index, 1);
                     }
                 });
                 if (citiesArr.length == 10) { citiesArr.shift(); }
-                citiesArr.push(city);
+                citiesArr.push(lastCity);
                 this.storage.setItem("favoriteCities", JSON.stringify(citiesArr));
             } else {
-                citiesArr.push(city);
+                citiesArr.push(lastCity);
                 this.storage.setItem("favoriteCities", JSON.stringify(citiesArr));
             }
-        } else if (btn == 'Remove') {
+        } else if (btn == 'Remove from favorites') {
             citiesArr = JSON.parse(favorite);
             citiesArr.forEach((item, index) => {
-                if (item == city) {
+                if (item.city == this.state.city) {
                     citiesArr.splice(index, 1);
                     this.state.isFav = false;
                     this.storage.setItem("favoriteCities", JSON.stringify(citiesArr));
@@ -130,7 +139,7 @@ class App extends Component {
         if (citiesArr) {
             citiesArr = JSON.parse(citiesArr);
             citiesArr.forEach((item, index) => {
-                if (item == this.state.city) {
+                if (item.city == this.state.city) {
                     this.state.isFav = true;
                 }
             });
